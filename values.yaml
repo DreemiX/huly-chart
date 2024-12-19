@@ -1,0 +1,222 @@
+# Global configuration
+global:
+  hulyVersion: "v0.6.377"
+  storageClass: "standard"
+
+# Main Huly configuration
+config:
+  hostAddress: "localhost"
+  secure: false
+  httpPort: 80
+  httpBind: "0.0.0.0"
+  title: "Huly"
+  defaultLanguage: "en"
+  lastNameFirst: true
+  disableSignup: false
+  urls:
+    front: "http://huly.example"
+    accounts: "http://account.huly.example"
+    collaborator: "ws://collaborator.huly.example"
+    rekoni: "http://rekoni.huly.example"
+    stats: "http://stats.huly.example"
+    transactor: "ws://transactor.huly.example"
+    calendar: "http://calendar"
+    gmail: "http://gmail:8088"
+    telegram: "http://telegram:8086"
+
+# Service configuration
+services:
+  front:
+    image: hardcoreeng/front
+    tag: "v0.6.377"
+    replicas: 1
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+      requests:
+        memory: "256Mi"
+        cpu: "250m"
+    
+  transactor:
+    image: hardcoreeng/transactor
+    tag: "v0.6.377"
+    replicas: 1
+    resources:
+      limits:
+        memory: "1Gi"
+        cpu: "1000m"
+      requests:
+        memory: "512Mi"
+        cpu: "500m"
+
+  collaborator:
+    image: hardcoreeng/collaborator
+    tag: "v0.6.377"
+    replicas: 1
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  account:
+    image: hardcoreeng/account
+    tag: "v0.6.377"
+    replicas: 1
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  workspace:
+    enabled: true
+    image: hardcoreeng/workspace
+    tag: "v0.6.377"
+    modelEnabled: "*"
+    replicas: 1
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  rekoni:
+    image: hardcoreeng/rekoni-service
+    tag: "v0.6.377"
+    replicas: 1
+    resources:
+      limits:
+        memory: "500Mi"
+        cpu: "500m"
+
+  fulltext:
+    image: hardcoreeng/fulltext
+    tag: "v0.6.377"
+    replicas: 1
+    resources:
+      limits:
+        memory: "512Mi"
+        cpu: "500m"
+
+  stats:
+    image: hardcoreeng/stats
+    tag: "v0.6.377"
+    replicas: 1
+    resources:
+      limits:
+        memory: "256Mi"
+        cpu: "250m"
+  calendar:
+    enabled: false
+    
+  gmail:
+    enabled: false
+    
+  telegram:
+    enabled: false
+
+  hostPorts:
+    enabled: false  # За замовчуванням вимкнено
+    minio:
+      api: 9000
+      console: 9001
+    mongodb: 27017
+    elasticsearch: 9200
+    transactor: 3333
+    rekoni: 4004
+    fulltext: 4700
+    stats: 4900
+  
+# Dependencies configuration
+mongodb:
+  enabled: true
+  auth:
+    enabled: false
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: 10Gi
+
+minio:
+  enabled: true
+  auth:
+    rootUser: minioadmin
+    rootPassword: minioadmin
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: 10Gi
+
+# Додамо налаштування для Elasticsearch
+elasticsearch:
+  image: elasticsearch
+  tag: "7.14.2"
+  esJavaOpts: "-Xms1024m -Xmx1024m"
+  cors:
+    enabled: true
+    allowOrigin: "http://localhost:8082"
+  plugin:
+    ingestAttachment:
+      enabled: true
+  probe:
+    liveness:
+      command: ["curl -s http://localhost:9200/_cluster/health | grep -vq '\"status\":\"red\"'"]
+      periodSeconds: 20
+      failureThreshold: 10
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: nginx
+  annotations: {}
+  hosts:
+    - host: huly.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+# Storage configuration
+persistence:
+  enabled: true
+  storageClass: "standard"
+
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Security context
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: 1
+
+# Affinity and anti-affinity rules
+affinity:
+  nodeAffinity: {}
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - huly
+          topologyKey: kubernetes.io/hostname
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []

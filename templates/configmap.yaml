@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+data:
+  ACCOUNTS_URL: {{ .Values.config.urls.accounts }}
+  COLLABORATOR_URL: {{ .Values.config.urls.collaborator }}
+  FRONT_URL: {{ .Values.config.urls.front }}
+  REKONI_URL: {{ .Values.config.urls.rekoni }}
+  STATS_URL: {{ .Values.config.urls.stats }}
+  TRANSACTOR_URL: {{ .Values.config.urls.transactor }}
+  MINIO_ENDPOINT: {{ .Release.Name }}-minio
+  MONGO_URL: mongodb://{{ .Release.Name }}-mongodb:27017
+  ELASTIC_URL: http://{{ .Release.Name }}-elasticsearch:9200
+  ELASTIC_INDEX_NAME: huly_storage_index
+  MODEL_ENABLED: "*"
+  DEFAULT_LANGUAGE: {{ .Values.config.defaultLanguage }}
+  TITLE: {{ .Values.config.title }}

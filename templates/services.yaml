@@ -1,0 +1,117 @@
+# Front Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-front
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-front
+
+---
+# Transactor Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-transactor
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 3333
+      targetPort: 3333
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-transactor
+
+---
+# Account Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-account
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-account
+
+---
+# Collaborator Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-collaborator
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 3078
+      targetPort: 3078
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-collaborator
+
+---
+# Rekoni Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-rekoni
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 4004
+      targetPort: 4004
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-rekoni
+
+---
+# Fulltext Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-fulltext
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 4700
+      targetPort: 4700
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-fulltext
+
+---
+# Stats Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-stats
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 4900
+      targetPort: 4900
+      protocol: TCP
+      name: http
+  selector:
+    app: {{ .Release.Name }}-stats

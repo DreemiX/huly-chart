@@ -1,0 +1,155 @@
+# Front Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-front
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.front.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-front
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-front
+    spec:
+      containers:
+        - name: front
+          image: "{{ .Values.services.front.image }}:{{ .Values.services.front.tag }}"
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+            - secretRef:
+                name: {{ .Release.Name }}-secret
+          env:
+            - name: SERVER_PORT
+              value: "8080"
+            - name: ACCOUNTS_URL
+              value: "http://{{ .Release.Name }}-account:3000"
+            - name: REKONI_URL
+              value: "http://{{ .Release.Name }}-rekoni:4004"
+            - name: STATS_URL
+              value: "http://{{ .Release.Name }}-stats:4900"
+            - name: COLLABORATOR_URL
+              value: "ws://{{ .Release.Name }}-collaborator:3078"
+          resources:
+            {{- toYaml .Values.services.front.resources | nindent 12 }}
+
+---
+# Transactor Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-transactor
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.transactor.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-transactor
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-transactor
+    spec:
+      containers:
+        - name: transactor
+          image: "{{ .Values.services.transactor.image }}:{{ .Values.services.transactor.tag }}"
+          ports:
+            - containerPort: 3333
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+            - secretRef:
+                name: {{ .Release.Name }}-secret
+          env:
+            - name: SERVER_PORT
+              value: "3333"
+            - name: DB_URL
+              value: "mongodb://{{ .Release.Name }}-mongodb:27017"
+            - name: MONGO_URL
+              value: "mongodb://{{ .Release.Name }}-mongodb:27017"
+            - name: ACCOUNTS_URL
+              value: "http://{{ .Release.Name }}-account:3000"
+            - name: FULLTEXT_URL
+              value: "http://{{ .Release.Name }}-fulltext:4700"
+            - name: STATS_URL
+              value: "http://{{ .Release.Name }}-stats:4900"
+          resources:
+            {{- toYaml .Values.services.transactor.resources | nindent 12 }}
+
+---
+# Account Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-account
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.account.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-account
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-account
+    spec:
+      containers:
+        - name: account
+          image: "{{ .Values.services.account.image }}:{{ .Values.services.account.tag }}"
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config
+            - secretRef:
+                name: {{ .Release.Name }}-secret
+          env:
+            - name: SERVER_PORT
+              value: "3000"
+            - name: DB_URL
+              value: "mongodb://{{ .Release.Name }}-mongodb:27017"
+            - name: MONGO_URL
+              value: "mongodb://{{ .Release.Name }}-mongodb:27017"
+            - name: TRANSACTOR_URL
+              value: "ws://{{ .Release.Name }}-transactor:3333"
+            - name: STORAGE_CONFIG
+              value: "minio|{{ .Release.Name }}-minio?accessKey=minioadmin&secretKey=minioadmin"
+            - name: STATS_URL
+              value: "http://{{ .Release.Name }}-stats:4900"
+          resources:
+            {{- toYaml .Values.services.account.resources | nindent 12 }}
+
+---
+# Collaborator Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-collaborator
+  labels:
+    {{- include "huly.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.services.collaborator.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-collaborator
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-collaborator
+    spec:
+      containers:
+        - name: collaborator
+          image: "{{ .Values.services.collaborator.image }}:{{ .Values.services.collaborator.tag }}"
+          ports:
+            - containerPort: 3078
+          envFrom:
+            - configMapRef:
+                name: {{ .Release.Name }}-config
